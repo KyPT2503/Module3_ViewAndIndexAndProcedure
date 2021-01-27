@@ -1,0 +1,60 @@
+/*Requirement 1*/
+create table product
+(
+    id int primary key auto_increment,
+    code varchar(32) not null,
+    name varchar(255) not null,
+    price int,
+    amount int not null,
+    description varchar(255),
+    status varchar(255)
+);
+
+alter table product
+modify code varchar(32) not null unique;
+
+/*Requirement 2*/
+insert into product (code, name, price, amount, description, status) value ('1001','knife','1000',22,'good','already sell 3');
+insert into product (code, name, price, amount, description, status) value ('1002','milk','2000',11,'delicious','already sell 2');
+insert into product (code, name, price, amount, description, status) value ('1003','knife','1000',22,'good','already sell 3');
+insert into product (code, name, price, amount, description, status) value ('1004','knife','1000',22,'good','already sell 3');
+
+/*Requirement 3*/
+explain select * from product where code='1001';
+
+alter table product add index idx_code (code);
+alter table product add index idx_nameAndPrice(name,price);
+
+explain select * from product where code='1001';
+explain select * from product where name='knife' and price=1000;
+
+/*Requirement 4*/
+create view product_view as select code,name,price,status from product;
+create or replace view product_view as select name,price from product;
+drop view product_view;
+
+/*Requirement 5*/
+create procedure usp_getAllFromProduct()
+begin
+    select * from product;
+end;
+call usp_getAllFromProduct();
+
+create procedure usp_insertNewProduct(code_ varchar(32),name_ varchar(255),price_ int,amount_ int)
+begin
+    insert into product (code, name, price, amount) value (code_,name_,price_,amount_);
+end;
+call usp_insertNewProduct('1104','beautiful girl',100000,1);
+create procedure usp_deleteProductById(code_ int)
+begin
+    delete from product where code=code_;
+end;
+create procedure usp_editProductById(code_ int,newName varchar(255),newPrice int,newAmount int,out money int)
+begin
+    call usp_deleteProductById(code_);
+    call usp_insertNewProduct(code_,newName,newPrice,newAmount);
+    set money=newPrice*newAmount;
+end;
+set @money=0;
+call usp_editProductById('1004','dog',500,20,@money);
+select @money;
